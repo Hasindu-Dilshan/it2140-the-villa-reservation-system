@@ -4,6 +4,15 @@ A complete full-stack mobile application for luxury hotel reservations, built wi
 
 ---
 
+GitHub Repository Link: https://github.com/Hasindu-Dilshan/it2140-the-villa-reservation-system.git
+
+Team Details: IT21436680
+
+Deployment Details
+Backend URL: https://it2140-the-villa-reservation-system.vercel.app/
+
+---
+
 ## 1. Project Architecture & Repository Layout
 
 ```
@@ -178,8 +187,8 @@ Under **Environment Variables**, add:
 1. Click **Deploy**.
 2. Once deployed, if your MongoDB database is empty, visit:
    ```
-   https://your-vercel-deployment.vercel.app/api/seed
+   https://it2140-the-villa-reservation-system.vercel.app/api/seed
    ```
    This will auto-populate the initial luxury villas and demo accounts.
-3. In your mobile app (on the Login screen), tap **⚙️ Configure Server URL** and enter your Vercel deployment URL (e.g. `https://your-vercel-deployment.vercel.app`).
+3. The mobile app is pre-configured to communicate directly with `https://it2140-the-villa-reservation-system.vercel.app`. (You can also tap **⚙️ Configure Server URL** on the Login screen to customize it anytime).
 
