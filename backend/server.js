@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -26,8 +27,66 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Resolve uploads directory across local development and Vercel serverless environments
+const getUploadsDir = () => {
+  const candidates = [
+    path.join(__dirname, 'uploads'),
+    path.join(__dirname, '..', 'backend', 'uploads'),
+    path.join(process.cwd(), 'backend', 'uploads'),
+    path.join(process.cwd(), 'uploads'),
+  ];
+  return candidates.find(dir => fs.existsSync(dir) && fs.existsSync(path.join(dir, 'deluxe_pool_villa.jpg'))) || path.join(__dirname, 'uploads');
+};
+
+// Serve static uploads with intelligent mock fallback:
+// 1. If requested file exists on disk and is a valid image (> 1KB), serve it directly
+// 2. If requested file is missing, corrupted, or a legacy test artifact, mock and serve the matching luxury villa image
+app.use('/uploads', (req, res, next) => {
+  const uploadsDir = getUploadsDir();
+  const filename = path.basename(req.path || '');
+  const filePath = path.join(uploadsDir, filename);
+
+  // If the file exists and is larger than 1KB, serve it directly
+  if (filename && fs.existsSync(filePath)) {
+    try {
+      const stats = fs.statSync(filePath);
+      if (stats.isFile() && stats.size > 1024) {
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.sendFile(filePath);
+      }
+    } catch (e) {}
+  }
+
+  // Fallback / Mock image resolution based on room name or keywords
+  const lower = filename.toLowerCase();
+  let fallbackName = 'deluxe_pool_villa.jpg';
+
+  if (lower.includes('ocean')) {
+    fallbackName = 'villa_ocean_suite.jpg';
+  } else if (lower.includes('standard') || lower.includes('garden')) {
+    fallbackName = 'standard_villa_suite.jpg';
+  } else if (lower.includes('pool') || lower.includes('deluxe') || lower.includes('presidential')) {
+    fallbackName = 'deluxe_pool_villa.jpg';
+  } else {
+    // Deterministic distribution across available luxury villa photos
+    const photos = ['villa_ocean_suite.jpg', 'deluxe_pool_villa.jpg', 'standard_villa_suite.jpg'];
+    let hash = 0;
+    for (let i = 0; i < lower.length; i++) {
+      hash = (hash * 31 + lower.charCodeAt(i)) & 0xffffffff;
+    }
+    fallbackName = photos[Math.abs(hash) % photos.length];
+  }
+
+  const fallbackPath = path.join(uploadsDir, fallbackName);
+  if (fs.existsSync(fallbackPath)) {
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(fallbackPath);
+  }
+
+  next();
+});
 
 // Health check / Root route (responds even before DB connection)
 app.get('/', (req, res) => {

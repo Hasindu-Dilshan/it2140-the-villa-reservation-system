@@ -292,6 +292,24 @@ async function runTests() {
     });
     assert(cancelRes.status === 200, 'Reservation cancelled/removed successfully');
 
+    // 17. Cleanup test entities to maintain database cleanliness
+    try {
+      const Room = require('../models/Room');
+      const User = require('../models/User');
+      const Reservation = require('../models/Reservation');
+
+      if (createdRoom && createdRoom._id) {
+        await Room.findByIdAndDelete(createdRoom._id);
+      }
+      if (booking2 && booking2._id) {
+        await Reservation.findByIdAndDelete(booking2._id);
+      }
+      await User.deleteMany({ email: { $in: [adminEmail, guestEmail] } });
+      console.log('✅ Cleaned up test rooms, reservations, and test users');
+    } catch (cleanupErr) {
+      console.warn('Test cleanup warning:', cleanupErr.message);
+    }
+
     console.log('\n======================================================');
     console.log('🎉 ALL BACKEND API & BUSINESS LOGIC TESTS PASSED 100%!');
     console.log('======================================================\n');

@@ -2,6 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const Room = require('../models/Room');
 
+// Helper to ensure every room has a valid luxury villa image
+const resolveRoomImage = (img, roomType) => {
+  if (img && typeof img === 'string' && img.trim() && !img.includes('room-')) {
+    return img;
+  }
+  const type = (roomType || '').toLowerCase();
+  if (type.includes('ocean')) return '/uploads/villa_ocean_suite.jpg';
+  if (type.includes('standard') || type.includes('garden')) return '/uploads/standard_villa_suite.jpg';
+  return '/uploads/deluxe_pool_villa.jpg';
+};
+
 // @desc    Create a new room (with image upload)
 // @route   POST /api/rooms
 // @access  Protected/Admin
@@ -20,8 +31,9 @@ const createRoom = async (req, res, next) => {
       roomImage = req.body.roomImage;
     }
 
+    // If no image provided, assign appropriate luxury mock villa image
     if (!roomImage) {
-      return res.status(400).json({ message: 'Room image is required' });
+      roomImage = resolveRoomImage('', roomType);
     }
 
     if (!roomNumber || !roomType || !pricePerNight || !maxCapacity) {
@@ -106,10 +118,16 @@ const getRooms = async (req, res, next) => {
 
     const rooms = await Room.find(filter).sort({ createdAt: -1 });
 
+    const sanitizedRooms = rooms.map(r => {
+      const obj = r.toObject ? r.toObject() : { ...r };
+      obj.roomImage = resolveRoomImage(obj.roomImage, obj.roomType);
+      return obj;
+    });
+
     res.json({
       success: true,
-      count: rooms.length,
-      rooms
+      count: sanitizedRooms.length,
+      rooms: sanitizedRooms
     });
   } catch (error) {
     next(error);
@@ -127,9 +145,12 @@ const getRoomById = async (req, res, next) => {
       return res.status(404).json({ message: 'Room not found' });
     }
 
+    const roomObj = room.toObject ? room.toObject() : { ...room };
+    roomObj.roomImage = resolveRoomImage(roomObj.roomImage, roomObj.roomType);
+
     res.json({
       success: true,
-      room
+      room: roomObj
     });
   } catch (error) {
     next(error);
