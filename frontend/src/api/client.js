@@ -2,12 +2,11 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Default host based on platform
+export const VERCEL_PRODUCTION_URL = 'https://it2140-the-villa-reservation-system.vercel.app';
+
+// Default host: Vercel production deployment
 const getDefaultHost = () => {
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:5001';
-  }
-  return 'http://localhost:5001';
+  return VERCEL_PRODUCTION_URL;
 };
 
 export const API_STORAGE_KEY = '@the_villa_api_url';
@@ -24,13 +23,24 @@ export const client = axios.create({
   },
 });
 
-// Initialize stored API URL if customized
+// Initialize stored API URL, automatically pointing to Vercel production
 export const initApiClient = async () => {
   try {
     const savedUrl = await AsyncStorage.getItem(API_STORAGE_KEY);
     if (savedUrl) {
-      currentBaseUrl = savedUrl;
-      client.defaults.baseURL = savedUrl;
+      // If the saved URL is an old local development address, migrate to Vercel production
+      if (savedUrl.includes('localhost:5001') || savedUrl.includes('10.0.2.2:5001')) {
+        currentBaseUrl = VERCEL_PRODUCTION_URL;
+        client.defaults.baseURL = VERCEL_PRODUCTION_URL;
+        await AsyncStorage.setItem(API_STORAGE_KEY, VERCEL_PRODUCTION_URL);
+      } else {
+        currentBaseUrl = savedUrl;
+        client.defaults.baseURL = savedUrl;
+      }
+    } else {
+      currentBaseUrl = VERCEL_PRODUCTION_URL;
+      client.defaults.baseURL = VERCEL_PRODUCTION_URL;
+      await AsyncStorage.setItem(API_STORAGE_KEY, VERCEL_PRODUCTION_URL);
     }
   } catch (e) {
     console.warn('Failed to load saved API URL:', e);

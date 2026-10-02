@@ -168,7 +168,21 @@ export const LoginScreen = ({ navigation }) => {
 
         {showConfig && (
           <View style={styles.configBox}>
-            <Text style={styles.configLabel}>API Base URL (for device testing):</Text>
+            <Text style={styles.configLabel}>API Base URL (Cloud / Local):</Text>
+            <View style={styles.quickPresetRow}>
+              <TouchableOpacity
+                style={styles.quickPresetBtn}
+                onPress={() => setCustomUrl('https://it2140-the-villa-reservation-system.vercel.app')}
+              >
+                <Text style={styles.quickPresetText}>☁️ Vercel Cloud</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickPresetBtn}
+                onPress={() => setCustomUrl('http://localhost:5001')}
+              >
+                <Text style={styles.quickPresetText}>💻 Localhost</Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               style={styles.configInput}
               value={customUrl}
@@ -377,6 +391,26 @@ const styles = StyleSheet.create({
     color: '#E2E8F0',
     fontSize: 11,
     marginBottom: 6,
+  },
+  quickPresetRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  quickPresetBtn: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  quickPresetText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
   },
   configInput: {
     backgroundColor: '#FFFFFF',
