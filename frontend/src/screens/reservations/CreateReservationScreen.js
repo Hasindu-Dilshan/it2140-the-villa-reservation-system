@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
-import { client, formatImageUrl } from '../../api/client';
+import { client, formatImageUrl, DEFAULT_VILLA_IMAGE } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 
 export const CreateReservationScreen = ({ route, navigation }) => {
@@ -47,6 +47,13 @@ export const CreateReservationScreen = ({ route, navigation }) => {
   const [checkOutDate, setCheckOutDate] = useState(initialCheckOut);
   const [guestCount, setGuestCount] = useState(reservation?.guestCount || 1);
   const [submitting, setSubmitting] = useState(false);
+  const [thumbSrc, setThumbSrc] = useState(formatImageUrl(room?.roomImage));
+
+  useEffect(() => {
+    if (room?.roomImage) {
+      setThumbSrc(formatImageUrl(room.roomImage));
+    }
+  }, [room?.roomImage]);
 
   // Compute duration in nights
   const durationNights = useMemo(() => {
@@ -183,9 +190,10 @@ export const CreateReservationScreen = ({ route, navigation }) => {
         {/* Room Snapshot Card */}
         <View style={styles.roomCard}>
           <Image
-            source={{ uri: formatImageUrl(room.roomImage) }}
+            source={{ uri: thumbSrc }}
             style={styles.roomThumb}
             resizeMode="cover"
+            onError={() => setThumbSrc(DEFAULT_VILLA_IMAGE)}
           />
           <View style={styles.roomInfo}>
             <Text style={styles.roomNumberTag}>ROOM {room.roomNumber}</Text>

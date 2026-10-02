@@ -82,7 +82,13 @@ export const RoomDetailScreen = ({ route, navigation }) => {
     );
   }
 
-  const imageUrl = formatImageUrl(room.roomImage);
+  const [detailImgSrc, setDetailImgSrc] = useState(formatImageUrl(room?.roomImage));
+
+  useEffect(() => {
+    if (room?.roomImage) {
+      setDetailImgSrc(formatImageUrl(room.roomImage));
+    }
+  }, [room?.roomImage]);
 
   return (
     <View style={styles.container}>
@@ -91,7 +97,12 @@ export const RoomDetailScreen = ({ route, navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
         {/* Hero Image Section */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+          <Image
+            source={{ uri: detailImgSrc }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => setDetailImgSrc(DEFAULT_VILLA_IMAGE)}
+          />
           <View style={styles.imageGradientOverlay} />
 
           {/* Floating Back Button */}

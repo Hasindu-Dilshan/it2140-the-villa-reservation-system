@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { colors } from '../theme/colors';
-import { formatImageUrl } from '../api/client';
+import { formatImageUrl, DEFAULT_VILLA_IMAGE } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 export const RoomCard = ({ room, onPress, onEdit, onDelete }) => {
   const { isAdmin } = useAuth();
-  const imageUrl = formatImageUrl(room.roomImage);
+  const [imgSrc, setImgSrc] = useState(formatImageUrl(room.roomImage));
+
+  useEffect(() => {
+    setImgSrc(formatImageUrl(room.roomImage));
+  }, [room.roomImage]);
 
   const handleDeletePress = () => {
     Alert.alert(
@@ -27,9 +31,10 @@ export const RoomCard = ({ room, onPress, onEdit, onDelete }) => {
     >
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: imageUrl }}
+          source={{ uri: imgSrc }}
           style={styles.image}
           resizeMode="cover"
+          onError={() => setImgSrc(DEFAULT_VILLA_IMAGE)}
         />
         <View style={styles.imageOverlay} />
 

@@ -12,12 +12,28 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
-import { client, formatImageUrl } from '../../api/client';
+import { client, formatImageUrl, DEFAULT_VILLA_IMAGE } from '../../api/client';
 import { StatusBadge } from '../../components/StatusBadge';
 import { EmptyState } from '../../components/EmptyState';
 import { useAuth } from '../../context/AuthContext';
 
 const STATUS_FILTERS = ['All', 'Confirmed', 'Pending', 'Cancelled'];
+
+const BookingThumb = ({ imageUri }) => {
+  const [sourceUri, setSourceUri] = useState(formatImageUrl(imageUri));
+  useEffect(() => {
+    setSourceUri(formatImageUrl(imageUri));
+  }, [imageUri]);
+
+  return (
+    <Image
+      source={{ uri: sourceUri }}
+      style={styles.thumb}
+      resizeMode="cover"
+      onError={() => setSourceUri(DEFAULT_VILLA_IMAGE)}
+    />
+  );
+};
 
 export const MyBookingsScreen = ({ navigation }) => {
   const { isAdmin } = useAuth();
@@ -192,11 +208,7 @@ export const MyBookingsScreen = ({ navigation }) => {
 
                 <View style={styles.cardBody}>
                   {room.roomImage && (
-                    <Image
-                      source={{ uri: formatImageUrl(room.roomImage) }}
-                      style={styles.thumb}
-                      resizeMode="cover"
-                    />
+                    <BookingThumb imageUri={room.roomImage} />
                   )}
 
                   <View style={styles.bookingDetails}>

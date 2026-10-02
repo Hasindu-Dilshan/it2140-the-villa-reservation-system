@@ -109,10 +109,13 @@ client.interceptors.response.use(
   }
 );
 
+export const DEFAULT_VILLA_IMAGE =
+  'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80';
+
 // Format image URL helper
 export const formatImageUrl = (imagePath) => {
   if (!imagePath) {
-    return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80';
+    return DEFAULT_VILLA_IMAGE;
   }
   if (
     imagePath.startsWith('http://') ||
@@ -120,6 +123,10 @@ export const formatImageUrl = (imagePath) => {
     imagePath.startsWith('data:')
   ) {
     return imagePath;
+  }
+  // If path is a legacy local test file that doesn't exist on cloud, fallback to bundled pool villa image
+  if (imagePath.includes('/uploads/room-')) {
+    return `${currentBaseUrl}/uploads/deluxe_pool_villa.jpg`;
   }
   // Remove leading slash if any to append cleanly
   const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
